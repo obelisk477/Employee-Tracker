@@ -18,6 +18,34 @@ const sqlQueryMap = {
     SELECT id AS department_id, name FROM department`
 }
 
+const sqlModifyMap ={
+    "Add Employee": ({employeeFirstName, employeeLastName, employeeRole, employeeManager}) => {
+        let query = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+        VALUES
+            ("${employeeFirstName}", "${employeeLastName}", "${employeeRole}", "${employeeManager}");`
+        return query
+    },
+    "Add Role": ({roleName, roleSalary, roleDept}) => {
+        let query = `INSERT INTO role (title, salary, department_id)
+        VALUES
+            ("${roleName}",${roleSalary},"${roleDept}")`
+        return query
+    },
+    "Add Department": ({dept}) => {
+        let query = `INSERT INTO department (name)
+        VALUES
+            ("${dept}")`
+        return query
+    },
+    "Update Employee Role": ({employeeToUpdate, employeeNewRole, employeeManager}) => {
+        let query = `UPDATE role (title, salary, department_id)
+        VALUES
+            ("${employeeToUpdate}",${employeeNewRole},"${employeeManager}")`
+        return query
+    },
+}
+
+
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -25,49 +53,100 @@ const db = mysql.createConnection(
       user: 'root',
       // MySQL password
       password: 'Cb4714481#',
-      database: 'employee_db'
+      database: 'employee_db',
+      multipleStatements: true
     },
     console.log(`Connected to the employee_db database.`)
 );
 
+function init() {
+
+
+    db.query(`SELECT title FROM role; SELECT e.manager_id, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee AS e JOIN employee as m ON m.id = e.manager_id; SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employee`, function (err, results) {
+        if (err) {
+            console.log(err)
+        }
+        
+        [listOfRoles, listOfManagers, listOfEmployees] = results
+        arrOfEmployees = listOfEmployees.map(employee => employee.full_name)
+        arrOfRoles = listOfRoles.map(role => role.title)
+        arrOfManagers = listOfManagers.map(manager => manager.manager)
+        
+        inquirer
+        .prompt([
+            {
+                type: 'list',
+                message: 'What would you like to do?',
+                name: 'action',
+                choices: [
+                    'View All Employees',
+                    'Add Employee',
+                    'Update Employee Role',
+                    'View All Roles',
+                    'Add Role',
+                    'View All Departments',
+                    'Add Department',
+                    'Quit'
+                ]
+            }
+        ])
+        .then(responses => {
+            if (responses.action.match(/(Add|Update)/)) {
+                let questions = employeeManagerUI.furtherQuestions[responses.action]
+                
+                switch (responses.action) {
+                    case ('Add Employee'):
+                        questions[2].choices = arrOfRoles
+                        questions[3].choices = arrOfManagers
+                        break;
+                    case ('Add Department'):
+                        break;
+                    case ('Add Role'):
+                        questions[2].choices = arrOfRoles
+                        break;
+                    case ('Update Employee Role'):
+                        questions[0].choices = arrOfEmployees
+                        questions[1].choices = arrOfRoles
+                        questions[2].choices = arrOfManagers
+                        break;
+                    default:
+                        break;
+                }
+    
+                inquirer
+                    .prompt(questions)
+                    .then(moreResponses => {
+                        let queryFunction = sqlModifyMap[responses.action]
+                        console.log(queryFunction)
+                        let query = queryFunction(moreResponses)
+                        console.log(query)
+                        db.query(query, function(err, result) {
+                            if (err) {
+                                console.log(err)
+                                return
+                            }
+                            console.log("Employee added!")
+                        })
+                    })
+    
+            } else if (responses.action === 'Quit') {
+                console.log("Goodbye!")
+                process.exit()
+            } else {
+                db.query(sqlQueryMap[responses.action], function (err, results) {
+                    if (err) {
+                        console.log(err)
+                    }
+                    console.log('\n')
+                    console.table(results);
+                    init()
+                  });                
+            }
+        })
+    });
+
+}
 
 let employeeManagerUI = new UI()
 console.log(employeeManagerUI.logo)
-
-inquirer
-    .prompt([
-        {
-            type: 'list',
-            message: 'What would you like to do?',
-            name: 'action',
-            choices: [
-                'View All Employees',
-                'Add Employee',
-                'Update Employee Role',
-                'View All Roles',
-                'Add Role',
-                'View All Departments',
-                'Add Department',
-                'Quit'
-            ]
-        }
-    ])
-    .then(responses => {
-        if (responses.action.match(/(Add|Update)/)) {
-            console.log('do something')
-        } else if (responses.action === 'Quit') {
-            return
-        } else {
-            db.query(sqlQueryMap[responses.action], function (err, results) {
-                if (err) {
-                    console.log(err)
-                }
-                console.log('\n')
-                console.table(results);
-              });
-            
-            
-        }
-    })
-
-
+init()

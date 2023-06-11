@@ -1,5 +1,9 @@
+const mysql = require('mysql2')
+
+
 class UI {
     constructor() {
+
         this.logo = `
         ,---------------------------------------------------.
         |    ______                 _                        |
@@ -22,7 +26,7 @@ class UI {
                 {
                     message: 'What is the name of the department?',
                     type: 'input',
-                    name: 'action'
+                    name: 'dept'
                 }],
             'Add Role' : [
                 {
@@ -37,8 +41,9 @@ class UI {
                 },
                 {
                     message: 'Which department does the role belong to?',
-                    type: 'input',
+                    type: 'list',
                     name: 'roleDept',
+                    choices: []
                 }],
             'Add Employee' : [
                 {
@@ -49,42 +54,61 @@ class UI {
                 {
                     message: 'What is the employee\'s last name?',
                     type: 'input',
-                    name: 'employeeFirstName',
+                    name: 'employeeLastName',
                 },
                 {
                     message: 'What is the employee\'s role?',
-                    type: 'input',
+                    type: 'list',
                     name: 'employeeRole',
+                    choices: []
                 },
                 {
                     message: 'Who is the employee\'s manager?',
-                    type: 'input',
+                    type: 'list',
                     name: 'employeeManager',
+                    choices: []
                 }],
             'Update Employee Role' : [
                 {
                     message: 'Which employee\'s role do you want to update?',
-                    type: 'input',
+                    type: 'list',
                     name: 'employeeToUpdate',
+                    choices: []
                 },
                 {
                     message: 'Which role do you want to assign the selected employee?',
-                    type: 'input',
+                    type: 'list',
                     name: 'employeeNewRole',
-                },
-                {
-                    message: 'What is the employee\'s role?',
-                    type: 'input',
-                    name: 'employeeRole',
+                    choices: []
                 },
                 {
                     message: 'Who is the employee\'s manager?',
-                    type: 'input',
+                    type: 'list',
                     name: 'employeeManager',
+                    choices: []
                 }],
         }
         
     }
 }
+
+
+// async function dbQuery() {
+//     const connection = await mysql.createConnection(
+//         {
+//           host: 'localhost',
+//           // MySQL username,
+//           user: 'root',
+//           // MySQL password
+//           password: 'Cb4714481#',
+//           database: 'employee_db'
+//         },
+//     );
+
+//     const query = await connection.query('SELECT * FROM department', function(err, results) {
+//         console.log(results)
+//         return results
+//     })
+// }
 
 module.exports = UI
