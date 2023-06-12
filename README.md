@@ -1,16 +1,27 @@
 # Employee-Tracker / Module 12
 
+
 ## Description
 
-This command line application provides an interface for maintaining an employee database & the records associated with these employees. In addition to viewing all of the employees, managers, etc
+This command line application provides an interface for maintaining an employee database & the records associated with these employees. In addition to viewing all of the employees, managers, roles, departments, and other information, all of this information can be modified from the interactive menu by adding or updating employee records. This simplifies the process of needing to interact directly with the database via SQL queries
+
 
 ## Usage
 
+To use the application, download the code from the repo found at https://github.com/obelisk477/Employee-Tracker/. Navigate to the same directory as the "index.js" file and, assuming you have Node installed, run the command "npm i". This will install the necessary packages and dependencies.
+
+Using the application is fairly self-evident. Any viewing of the data, or operations you may wish to perform, are listed as options in a menu format within the interface. Running any of them will prompt you for further instructions if necessary, such as filling out information about adding roles or employees. If the operation is successful, you will be notified, and the menu will re-appear where you can view any newly added data. If you wish to exit the application, you can select the "Quit" option from the menu.
+
+
 ## Video
+
+A video demonstration of the application's functionality can be found at https://drive.google.com/file/d/1-wytdJn6EsvX931GqZPmA1RO1cnQRzY9/view
+
 
 ## License
 
 Please refer to the LICENSE in the repo.
+
 
 ## Credits
 
