@@ -53,7 +53,7 @@ const db = mysql.createConnection(
       // MySQL username,
       user: 'root',
       // MySQL password
-      password: 'Cb4714481#',
+      password: '12345678',
       database: 'employee_db',
       multipleStatements: true
     },
@@ -151,7 +151,9 @@ function init() {
                                 console.log(err)
                                 return
                             }
-                            console.log("Employee added!") // Fix to say what was done
+                            console.log('\n')
+                            console.log("Operation \"" + responses.action + "\" successful")
+                            console.log('\n')
                             init()
                         })
                     })

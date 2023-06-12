@@ -92,23 +92,4 @@ class UI {
     }
 }
 
-
-// async function dbQuery() {
-//     const connection = await mysql.createConnection(
-//         {
-//           host: 'localhost',
-//           // MySQL username,
-//           user: 'root',
-//           // MySQL password
-//           password: 'Cb4714481#',
-//           database: 'employee_db'
-//         },
-//     );
-
-//     const query = await connection.query('SELECT * FROM department', function(err, results) {
-//         console.log(results)
-//         return results
-//     })
-// }
-
 module.exports = UI

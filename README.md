@@ -2,6 +2,8 @@
 
 ## Description
 
+This command line application provides an interface for maintaining an employee database & the records associated with these employees. In addition to viewing all of the employees, managers, etc
+
 ## Usage
 
 ## Video
