@@ -38,9 +38,10 @@ const sqlModifyMap ={
         return query
     },
     "Update Employee Role": ({employeeToUpdate, employeeNewRole, employeeManager}) => {
-        let query = `UPDATE role (title, salary, department_id)
-        VALUES
-            ("${employeeToUpdate}",${employeeNewRole},"${employeeManager}")`
+        let query = `
+        UPDATE employee
+        SET role_id = ${employeeNewRole}, manager_id = ${employeeManager}
+        WHERE id = ${employeeToUpdate};`
         return query
     },
 }
@@ -60,18 +61,23 @@ const db = mysql.createConnection(
 );
 
 function init() {
-
-
-    db.query(`SELECT title FROM role; SELECT e.manager_id, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee AS e JOIN employee as m ON m.id = e.manager_id; SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM employee`, function (err, results) {
+    db.query(`SELECT id, title FROM role; SELECT e.manager_id, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee AS e JOIN employee as m ON m.id = e.manager_id; SELECT id, CONCAT(first_name, ' ', last_name) AS full_name FROM employee; SELECT * FROM department`, function (err, results) {
         if (err) {
             console.log(err)
         }
         
-        [listOfRoles, listOfManagers, listOfEmployees] = results
-        arrOfEmployees = listOfEmployees.map(employee => employee.full_name)
-        arrOfRoles = listOfRoles.map(role => role.title)
-        arrOfManagers = listOfManagers.map(manager => manager.manager)
+        [listOfRoles, listOfManagers, listOfEmployees, listOfDepts] = results
+
+        const employeeMap = new Map()
+        const roleMap = new Map()
+        const managerMap = new Map()
+        const deptMap = new Map()
         
+        listOfEmployees.map(employee => employeeMap.set(employee.full_name, employee.id))
+        listOfRoles.map(role => roleMap.set(role.title, role.id))
+        listOfManagers.map(manager => managerMap.set(manager.manager, manager.manager_id))
+        listOfDepts.map(dept => deptMap.set(dept.name, dept.id))
+
         inquirer
         .prompt([
             {
@@ -93,21 +99,21 @@ function init() {
         .then(responses => {
             if (responses.action.match(/(Add|Update)/)) {
                 let questions = employeeManagerUI.furtherQuestions[responses.action]
-                
+
                 switch (responses.action) {
                     case ('Add Employee'):
-                        questions[2].choices = arrOfRoles
-                        questions[3].choices = arrOfManagers
+                        questions[2].choices = [...roleMap.keys()]
+                        questions[3].choices = [...managerMap.keys()]
                         break;
                     case ('Add Department'):
                         break;
                     case ('Add Role'):
-                        questions[2].choices = arrOfRoles
+                        questions[2].choices = [...deptMap.keys()]
                         break;
                     case ('Update Employee Role'):
-                        questions[0].choices = arrOfEmployees
-                        questions[1].choices = arrOfRoles
-                        questions[2].choices = arrOfManagers
+                        questions[0].choices = [...employeeMap.keys()]
+                        questions[1].choices = [...roleMap.keys()]
+                        questions[2].choices = [...managerMap.keys()]
                         break;
                     default:
                         break;
@@ -117,15 +123,36 @@ function init() {
                     .prompt(questions)
                     .then(moreResponses => {
                         let queryFunction = sqlModifyMap[responses.action]
-                        console.log(queryFunction)
+
+
+                        switch (responses.action) {
+                            case ('Add Employee'):
+                                moreResponses.employeeRole = roleMap.get(moreResponses.employeeRole)
+                                moreResponses.employeeManager = managerMap.get(moreResponses.employeeManager)
+                                break;
+                            case ('Add Department'):
+                                break;
+                            case ('Add Role'):
+                                moreResponses.roleDept = deptMap.get(moreResponses.roleDept)
+                                break;
+                            case ('Update Employee Role'):
+                                moreResponses.employeeToUpdate = employeeMap.get(moreResponses.employeeToUpdate)
+                                moreResponses.employeeNewRole = roleMap.get(moreResponses.employeeNewRole)
+                                moreResponses.employeeManager = managerMap.get(moreResponses.employeeManager)
+                                break;
+                            default:
+                                break;
+                        }
+
                         let query = queryFunction(moreResponses)
-                        console.log(query)
+
                         db.query(query, function(err, result) {
                             if (err) {
                                 console.log(err)
                                 return
                             }
-                            console.log("Employee added!")
+                            console.log("Employee added!") // Fix to say what was done
+                            init()
                         })
                     })
     
